@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`apiServiceV1 #auth valid creds should call callHttp 1`] = `
+Array [
+  "https://api.getmati.com/oauth/token",
+  Object {
+    "body": "grant_type=client_credentials&scope=identity",
+    "headers": Object {
+      "authorization": "Basic Y2xpZW50SWQ6Y2xpZW50U2VjcmV0",
+      "content-type": "application/x-www-form-urlencoded",
+    },
+    "method": "POST",
+  },
+]
+`;

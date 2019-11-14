@@ -1,0 +1,7 @@
+.idea
+.eslintignore
+.eslintrc.js
+coverage
+dist/example
+src
+test
