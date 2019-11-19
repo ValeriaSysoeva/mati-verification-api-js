@@ -1,3 +1,5 @@
+import IdentityResource from './v2/IdentityResource';
+
 export enum StepIdTypes {
   AlterationDetection = 'mexican-curp-validation',
   Curp = 'alteration-detection',
@@ -35,6 +37,6 @@ export default interface VerificationResource {
   id: string;
   documents: VerificationDocument[];
   expired?: boolean;
-  identity: {}; // TODO: TBD
+  identity: Pick<IdentityResource, 'status'>;
   steps: Step[];
 }
