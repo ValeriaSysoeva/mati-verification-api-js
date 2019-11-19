@@ -57,6 +57,14 @@ app.post('/webhooks/v2', async (req: Request, res: Response) => {
       await apiService.auth();
       const verificationResource = await apiService.fetchVerification(webhookResource.resource);
       console.debug('verificationResource', verificationResource);
+      if (webhookResource.eventName === 'verification_completed') {
+        if (verificationResource.identity.status === 'reviewNeeded') {
+          console.log('Need to review');
+          verificationResource.documents.forEach((document) => {
+            console.log('Name', document.fields.fullName.value);
+          });
+        }
+      }
     } catch (err) {
       console.error(err);
     }
