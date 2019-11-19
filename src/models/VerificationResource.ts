@@ -12,6 +12,21 @@ export enum StepIdTypes {
   Watchlists = 'watchlists',
 }
 
+export enum FieldNames {
+  Address = 'address',
+  Cde = 'cde',
+  Curp = 'curp',
+  DateOfBirth = 'dateOfBirth',
+  DniNumber = 'dniNumber',
+  DocumentNumber = 'documentNumber',
+  EmissionDate = 'emissionDate',
+  ExpirationDate = 'expirationDate',
+  FullName = 'fullName',
+  Ne = 'ne',
+  OcrNumber = 'ocrNumber',
+  PersonalNumber = 'personalNumber',
+}
+
 export enum StepStatusTypes {
   Pending = 0,
   Running = 100,
@@ -28,9 +43,16 @@ export interface Step {
 export interface VerificationDocument {
   type: string;
   country: string;
+  fields: {
+    [fieldName in FieldNames]: Field;
+  };
   region?: string;
   steps: Step[];
   photos: string[];
+}
+
+export interface Field {
+  value: any;
 }
 
 export default interface VerificationResource {
