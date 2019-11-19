@@ -7,7 +7,7 @@ export enum EventNameTypes {
   VerificationUpdated = 'verification_updated',
 }
 
-export default interface Webhook {
+export default interface WebhookResource {
   eventName: EventNameTypes;
   resource: string;
 }

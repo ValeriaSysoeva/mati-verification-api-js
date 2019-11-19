@@ -3,10 +3,13 @@ import crypto from 'crypto';
 
 import callHttp, { formContentType, RequestOptions } from './lib/callHttp';
 import isomorph from './lib/isomorph';
-import AuthResponse from './models/v1/AuthResponse';
+import AuthResponse from './models/v2/AuthResponse';
 import VerificationResource from './models/VerificationResource';
+import IdentityResource from './models/v2/IdentityResource';
+import SendInputRequest from './models/v2/SendInputRequest';
+import SendInputResponse from './models/v2/SendInputResponse';
 
-export const API_HOST = 'https://api.getmati.com';
+export const API_HOST = 'https://api.getmati.com/v2';
 
 export type Options = {
   clientId: string;
@@ -21,7 +24,7 @@ type CallHttpParamsType = {
   requestOptions: RequestOptions,
 };
 
-class ApiServiceV1 {
+class ApiService {
   private bearerAuthHeader: string;
 
   private clientAuthHeader: string;
@@ -51,12 +54,11 @@ class ApiServiceV1 {
    */
   async auth() {
     const authResponse = await this.callHttp({
-      path: 'oauth/token',
+      path: 'oauth',
       requestOptions: {
         method: 'POST',
         body: qs.stringify({
           grant_type: 'client_credentials',
-          scope: 'identity',
         }),
         headers: {
           authorization: this.clientAuthHeader,
@@ -91,6 +93,19 @@ class ApiServiceV1 {
     }) as Promise<VerificationResource>;
   }
 
+  async createIdentity(): Promise<IdentityResource> {
+    return this.callHttp({
+      path: 'v2/identities',
+      requestOptions: {
+        method: 'POST',
+        headers: {
+          authorization: this.bearerAuthHeader,
+          'content-type': formContentType,
+        },
+      },
+    }) as Promise<IdentityResource>;
+  }
+
   private setClientAuth(clientId: string, clientSecret: string) {
     this.clientAuthHeader = `Basic ${isomorph.btoa(`${clientId}:${clientSecret}`)}`;
   }
@@ -107,6 +122,28 @@ class ApiServiceV1 {
     const requestURL = url || `${this.host}/${path}`;
     return callHttp(requestURL, requestOptions);
   }
+
+  async sendInput(
+    identityId: string,
+    sendInputRequest: SendInputRequest,
+  ): Promise<SendInputResponse> {
+    // @ts-ignore
+    const formData = new isomorph.FormData();
+    formData.append('inputs', JSON.stringify(sendInputRequest.inputs));
+    sendInputRequest.files.forEach((fileRecord) => {
+      formData.append(fileRecord.mediaType, fileRecord.stream, fileRecord.fileName);
+    });
+    return this.callHttp({
+      path: `v2/identities/${identityId}/send-input`,
+      requestOptions: {
+        method: 'POST',
+        body: formData,
+        headers: {
+          authorization: this.bearerAuthHeader,
+        },
+      },
+    }) as Promise<SendInputResponse>;
+  }
 }
 
-export default new ApiServiceV1();
+export default new ApiService();

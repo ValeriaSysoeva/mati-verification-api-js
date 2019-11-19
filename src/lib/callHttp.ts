@@ -8,6 +8,7 @@ export type RequestOptions = {
 };
 
 export const formContentType = 'application/x-www-form-urlencoded';
+export const multipartFormDataType = 'multipart/form-data';
 
 /**
  * @param requestURL
