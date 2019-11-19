@@ -16,7 +16,7 @@ const clientSecret = process.env.CLIENT_SECRET || 'default';
 
 async function main() {
   try {
-    apiService.init({ clientId, clientSecret, host: 'http://localhost:4002' });
+    apiService.init({ clientId, clientSecret });
     await apiService.auth();
     const identityResource = await apiService.createIdentity();
     const { _id: id } = identityResource;

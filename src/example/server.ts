@@ -16,14 +16,12 @@ apiServiceV1.init({
   clientId,
   clientSecret,
   webhookSecret,
-  host: 'http://localhost:9000',
 });
 
 apiService.init({
   clientId,
   clientSecret,
   webhookSecret,
-  host: 'http://localhost:4002',
 });
 
 const app = express();
