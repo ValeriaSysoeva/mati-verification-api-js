@@ -16,12 +16,14 @@ apiServiceV1.init({
   clientId,
   clientSecret,
   webhookSecret,
+  host: process.env.API1_HOST, // Optional
 });
 
 apiService.init({
   clientId,
   clientSecret,
   webhookSecret,
+  host: process.env.API2_HOST, // Optional
 });
 
 const app = express();

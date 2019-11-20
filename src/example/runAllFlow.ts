@@ -16,13 +16,16 @@ const clientSecret = process.env.CLIENT_SECRET || 'default';
 
 async function main() {
   try {
-    apiService.init({ clientId, clientSecret });
+    apiService.init({
+      clientId,
+      clientSecret,
+      host: process.env.API2_HOST, // Optional
+    });
     await apiService.auth();
     const identityResource = await apiService.createIdentity();
     const { _id: id } = identityResource;
     enum FileNames {
-      Front = 'front.jpeg',
-      Back = 'back.jpeg',
+      Front = 'front.png',
       Video = 'video.mp4',
     }
     const sendInputRequest: SendInputRequest = {
@@ -38,28 +41,12 @@ async function main() {
             filename: FileNames.Front,
           },
         },
-        <Input<DocumentPhotoInputData>>{
-          inputType: InputTypeTypes.DocumentPhoto,
-          group: 0,
-          data: {
-            type: DocumentTypeTypes.NationalId,
-            country: 'US',
-            region: 'IL',
-            page: PageTypes.Back,
-            filename: FileNames.Back,
-          },
-        },
       ],
       files: [
         {
           mediaType: MediaTypeTypes.Document,
           fileName: FileNames.Front,
           stream: fs.createReadStream(`./assets/${FileNames.Front}`),
-        },
-        {
-          mediaType: MediaTypeTypes.Document,
-          fileName: FileNames.Back,
-          stream: fs.createReadStream(`./assets/${FileNames.Back}`),
         },
         {
           mediaType: MediaTypeTypes.Video,

@@ -36,12 +36,12 @@ class ApiServiceV1 {
    */
   init(options: Options) {
     const {
-      host = API_HOST,
+      host,
       clientId,
       clientSecret,
       webhookSecret,
     } = options;
-    this.host = host;
+    this.host = host || API_HOST;
     this.webhookSecret = webhookSecret || false;
     this.setClientAuth(clientId, clientSecret);
   }
