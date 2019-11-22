@@ -1,14 +1,17 @@
 {
-  "name": "mati-lib",
+  "name": "mati-verification-api",
   "version": "0.0.1",
-  "description": "Mati Library",
+  "description": "Mati Verification Api",
+  "main": "dist/main.js",
+  "types": "dist/main.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MatiFace/mati-lib"
+    "url": "git+https://github.com/MatiFace/mati-verification-api-js"
   },
   "author": "Fedor Shubin",
   "license": "MIT",
   "scripts": {
+    "build": "tsc",
     "example": "ts-node src/example/server.ts",
     "lint": "eslint \"**/*.{js,ts}\"",
     "runAllFlow": "ts-node src/example/runAllFlow.ts",

@@ -1,7 +1,10 @@
 .idea
-.eslintignore
-.eslintrc.js
+assets
 coverage
 dist/example
 src
 test
+.eslintignore
+.eslintrc.js
+jest.config.js
+tsconfig.json
