@@ -8,6 +8,7 @@ import VerificationResource from './models/VerificationResource';
 import IdentityResource from './models/v2/IdentityResource';
 import SendInputRequest from './models/v2/SendInputRequest';
 import SendInputResponse from './models/v2/SendInputResponse';
+import ErrorResponse from './lib/ErrorResponse';
 
 export const API_HOST = 'https://api.getmati.com/v2';
 
@@ -21,7 +22,8 @@ export type Options = {
 type CallHttpParamsType = {
   url?: string,
   path?: string,
-  requestOptions: RequestOptions,
+  requestOptions?: RequestOptions,
+  authType?: 'bearer' | 'basic' | 'none',
 };
 
 class ApiService {
@@ -55,13 +57,13 @@ class ApiService {
   async auth() {
     const authResponse = await this.callHttp({
       path: 'oauth',
+      authType: 'basic',
       requestOptions: {
         method: 'POST',
         body: qs.stringify({
           grant_type: 'client_credentials',
         }),
         headers: {
-          authorization: this.clientAuthHeader,
           'content-type': formContentType,
         },
       },
@@ -83,25 +85,17 @@ class ApiService {
   }
 
   async fetchVerification(url: string): Promise<VerificationResource> {
-    return this.callHttp({
-      url,
-      requestOptions: {
-        headers: {
-          authorization: this.bearerAuthHeader,
-        },
-      },
-    }) as Promise<VerificationResource>;
+    return this.callHttp({ url }) as Promise<VerificationResource>;
   }
 
-  async createIdentity(): Promise<IdentityResource> {
+  async createIdentity(metadata?: Record<string, any>): Promise<IdentityResource> {
     return this.callHttp({
       path: 'v2/identities',
       requestOptions: {
         method: 'POST',
-        headers: {
-          authorization: this.bearerAuthHeader,
-          'content-type': formContentType,
-        },
+        body: metadata
+          ? JSON.stringify({ metadata })
+          : undefined,
       },
     }) as Promise<IdentityResource>;
   }
@@ -117,10 +111,46 @@ class ApiService {
   private async callHttp({
     path,
     url,
-    requestOptions,
+    requestOptions = {},
+    authType = 'bearer',
   }: CallHttpParamsType) {
+    let triedAuth = false;
+    if (authType === 'bearer' && !this.bearerAuthHeader) {
+      await this.auth();
+      triedAuth = true;
+    }
+    if (authType !== 'none') {
+      let authorization = null;
+      if (authType === 'bearer') {
+        authorization = this.bearerAuthHeader;
+      } else if (authType === 'basic') {
+        authorization = this.clientAuthHeader;
+      }
+      if (authorization) {
+        const { headers = {} } = requestOptions;
+        // @ts-ignore
+        headers.authorization = authorization;
+        requestOptions.headers = headers;
+      }
+    }
+
     const requestURL = url || `${this.host}/${path}`;
-    return callHttp(requestURL, requestOptions);
+    try {
+      return await callHttp(requestURL, requestOptions);
+    } catch (err) {
+      if (!triedAuth
+        && authType === 'bearer'
+        && err instanceof ErrorResponse
+        && (err as ErrorResponse).response.status === 401
+      ) {
+        // re-auth
+        await this.auth();
+        // @ts-ignore
+        requestOptions.headers.authorization = this.bearerAuthHeader;
+        return callHttp(requestURL, requestOptions);
+      }
+      throw err;
+    }
   }
 
   async sendInput(
@@ -138,9 +168,6 @@ class ApiService {
       requestOptions: {
         method: 'POST',
         body: formData,
-        headers: {
-          authorization: this.bearerAuthHeader,
-        },
       },
     }) as Promise<SendInputResponse>;
   }

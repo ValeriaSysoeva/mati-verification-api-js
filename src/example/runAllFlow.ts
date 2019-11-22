@@ -1,7 +1,7 @@
 import fs from 'fs';
 
 import './config';
-import apiService from '../apiService';
+import { service as apiService } from '../main';
 import SendInputRequest, {
   DocumentPhotoInputData,
   DocumentTypeTypes, Input,
@@ -21,7 +21,6 @@ async function main() {
       clientSecret,
       host: process.env.API2_HOST, // Optional
     });
-    await apiService.auth();
     const identityResource = await apiService.createIdentity();
     const { _id: id } = identityResource;
     enum FileNames {

@@ -5,6 +5,7 @@ import callHttp, { formContentType, RequestOptions } from './lib/callHttp';
 import isomorph from './lib/isomorph';
 import AuthResponse from './models/v1/AuthResponse';
 import VerificationResource from './models/VerificationResource';
+import ErrorResponse from './lib/ErrorResponse';
 
 export const API_HOST = 'https://api.getmati.com';
 
@@ -18,7 +19,8 @@ export type Options = {
 type CallHttpParamsType = {
   url?: string,
   path?: string,
-  requestOptions: RequestOptions,
+  requestOptions?: RequestOptions,
+  authType?: 'bearer' | 'basic' | 'none',
 };
 
 class ApiServiceV1 {
@@ -52,6 +54,7 @@ class ApiServiceV1 {
   async auth() {
     const authResponse = await this.callHttp({
       path: 'oauth/token',
+      authType: 'basic',
       requestOptions: {
         method: 'POST',
         body: qs.stringify({
@@ -59,7 +62,6 @@ class ApiServiceV1 {
           scope: 'identity',
         }),
         headers: {
-          authorization: this.clientAuthHeader,
           'content-type': formContentType,
         },
       },
@@ -81,14 +83,7 @@ class ApiServiceV1 {
   }
 
   async fetchVerification(url: string): Promise<VerificationResource> {
-    return this.callHttp({
-      url,
-      requestOptions: {
-        headers: {
-          authorization: this.bearerAuthHeader,
-        },
-      },
-    }) as Promise<VerificationResource>;
+    return this.callHttp({ url }) as Promise<VerificationResource>;
   }
 
   private setClientAuth(clientId: string, clientSecret: string) {
@@ -102,10 +97,46 @@ class ApiServiceV1 {
   private async callHttp({
     path,
     url,
-    requestOptions,
+    requestOptions = {},
+    authType = 'bearer',
   }: CallHttpParamsType) {
+    let triedAuth = false;
+    if (authType === 'bearer' && !this.bearerAuthHeader) {
+      await this.auth();
+      triedAuth = true;
+    }
+    if (authType !== 'none') {
+      let authorization = null;
+      if (authType === 'bearer') {
+        authorization = this.bearerAuthHeader;
+      } else if (authType === 'basic') {
+        authorization = this.clientAuthHeader;
+      }
+      if (authorization) {
+        const { headers = {} } = requestOptions;
+        // @ts-ignore
+        headers.authorization = authorization;
+        requestOptions.headers = headers;
+      }
+    }
+
     const requestURL = url || `${this.host}/${path}`;
-    return callHttp(requestURL, requestOptions);
+    try {
+      return await callHttp(requestURL, requestOptions);
+    } catch (err) {
+      if (!triedAuth
+        && authType === 'bearer'
+        && err instanceof ErrorResponse
+        && (err as ErrorResponse).response.status === 401
+      ) {
+        // re-auth
+        await this.auth();
+        // @ts-ignore
+        requestOptions.headers.authorization = this.bearerAuthHeader;
+        return callHttp(requestURL, requestOptions);
+      }
+      throw err;
+    }
   }
 }
 

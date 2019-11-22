@@ -2,8 +2,10 @@ import express, { Response, Request } from 'express';
 import bodyParser from 'body-parser';
 
 import './config';
-import apiServiceV1 from '../apiServiceV1';
-import apiService from '../apiService';
+import {
+  service as apiService,
+  sdkService as apiServiceV1,
+} from '../main';
 import WebhookResource from '../models/WebhookResource';
 
 const port = process.env.PORT || 3000;
