@@ -21,7 +21,9 @@ async function main() {
       clientSecret,
       host: process.env.API2_HOST, // Optional
     });
-    const identityResource = await apiService.createIdentity();
+    const identityResource = await apiService.createIdentity({
+      payload: 'some value',
+    });
     const { _id: id } = identityResource;
     enum FileNames {
       Front = 'front.png',

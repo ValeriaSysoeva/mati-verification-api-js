@@ -4,7 +4,6 @@ import crypto from 'crypto';
 import callHttp, { formContentType, RequestOptions } from './lib/callHttp';
 import isomorph from './lib/isomorph';
 import AuthResponse from './models/v1/AuthResponse';
-import VerificationResource from './models/VerificationResource';
 import ErrorResponse from './lib/ErrorResponse';
 
 export const API_HOST = 'https://api.getmati.com';
@@ -33,8 +32,11 @@ class ApiServiceV1 {
   private webhookSecret: string | false = false;
 
   /**
-   * Initializes the service.
-   * @param options
+   * Initializes the service. Call this method before using api calls.
+   * @param {Options} options
+   * @param {string} options.clientId
+   * @param {string} options.clientSecret
+   * @param {string} options.webhookSecret
    */
   init(options: Options) {
     const {
@@ -49,9 +51,51 @@ class ApiServiceV1 {
   }
 
   /**
+   * Validates signature of requests.
+   * We use webhookSecret to sign data. You put this value in the Dashboard, when define webhooks.
+   * And provide the same value, when you initialize the service. Please, use a strong secret value.
+   * Draw your attention. The order of the fields in the body is important. Keep the original one.
+   * @param {string} signature - signature from x-signature header of request calculated
+   * on Mati side
+   * @param {any} body - data came in request body
+   * @returns {boolean} `true` if the signature is valid, `false` - otherwise
+   */
+  validateSignature(signature: string, body: any): boolean {
+    if (!this.webhookSecret) {
+      return true;
+    }
+    const bodyStr = JSON.stringify(body);
+    const computedSignature = crypto
+      .createHmac('sha256', this.webhookSecret as string)
+      .update(bodyStr)
+      .digest('hex');
+    return signature === computedSignature;
+  }
+
+  /**
+   * Fetches resource by its absolute URL using your client credentials you provide,
+   * when you initialize the service. Usually you do not need to build url by yourself,
+   * its values come in webhooks or in other resources.
+   * @param {string} url absolute url of the resource
+   * @returns {Promise<T>} resource
+   * @throws ErrorResponse if we get http error
+   */
+  async fetchResource<T>(url: string): Promise<T> {
+    return this.callHttp({ url }) as Promise<T>;
+  }
+
+  private setClientAuth(clientId: string, clientSecret: string) {
+    this.clientAuthHeader = `Basic ${isomorph.btoa(`${clientId}:${clientSecret}`)}`;
+  }
+
+  private setBearerAuth(accessToken: string) {
+    this.bearerAuthHeader = `Bearer ${accessToken}`;
+  }
+
+  /**
    * Authenticates client.
    */
-  async auth() {
+  private async auth() {
     const authResponse = await this.callHttp({
       path: 'oauth/token',
       authType: 'basic',
@@ -68,30 +112,6 @@ class ApiServiceV1 {
     }) as AuthResponse;
     this.setBearerAuth(authResponse.access_token);
     return authResponse;
-  }
-
-  validateSignature(signature: string, body: any): boolean {
-    if (!this.webhookSecret) {
-      return true;
-    }
-    const bodyStr = JSON.stringify(body);
-    const computedSignature = crypto
-      .createHmac('sha256', this.webhookSecret as string)
-      .update(bodyStr)
-      .digest('hex');
-    return signature === computedSignature;
-  }
-
-  async fetchVerification(url: string): Promise<VerificationResource> {
-    return this.callHttp({ url }) as Promise<VerificationResource>;
-  }
-
-  private setClientAuth(clientId: string, clientSecret: string) {
-    this.clientAuthHeader = `Basic ${isomorph.btoa(`${clientId}:${clientSecret}`)}`;
-  }
-
-  private setBearerAuth(accessToken: string) {
-    this.bearerAuthHeader = `Bearer ${accessToken}`;
   }
 
   private async callHttp({

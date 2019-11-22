@@ -7,6 +7,7 @@ import {
   sdkService as apiServiceV1,
 } from '../main';
 import WebhookResource from '../models/WebhookResource';
+import VerificationResource from '../models/VerificationResource';
 
 const port = process.env.PORT || 3000;
 
@@ -38,9 +39,8 @@ app.post('/webhooks/v1', async (req: Request, res: Response) => {
   if (isValid) {
     const webhookResource = req.body as WebhookResource;
     try {
-      await apiServiceV1.auth();
-      const verificationResource = await apiServiceV1.fetchVerification(webhookResource.resource);
-      console.debug('verificationResource', verificationResource);
+      const verificationResource = await apiServiceV1.fetchResource(webhookResource.resource);
+      console.log('verificationResource', verificationResource);
     } catch (err) {
       console.error(err);
     }
@@ -56,9 +56,9 @@ app.post('/webhooks/v2', async (req: Request, res: Response) => {
   if (isValid) {
     const webhookResource = req.body as WebhookResource;
     try {
-      await apiService.auth();
-      const verificationResource = await apiService.fetchVerification(webhookResource.resource);
-      console.debug('verificationResource', verificationResource);
+      const verificationResource = await apiService
+        .fetchResource<VerificationResource>(webhookResource.resource);
+      console.log('verificationResource', verificationResource);
       if (webhookResource.eventName === 'verification_completed') {
         if (verificationResource.identity.status === 'reviewNeeded') {
           console.log('Need to review');
@@ -66,6 +66,8 @@ app.post('/webhooks/v2', async (req: Request, res: Response) => {
             console.log('Name', document.fields.fullName.value);
           });
         }
+      } else if (webhookResource.eventName === 'verification_expired') {
+        console.log('User left without completing the flow');
       }
     } catch (err) {
       console.error(err);
