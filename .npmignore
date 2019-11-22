@@ -5,6 +5,6 @@ dist/example
 src
 test
 .eslintignore
-.eslintrc.js
+.eslintrc
 jest.config.js
 tsconfig.json
