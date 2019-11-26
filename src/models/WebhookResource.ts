@@ -1,3 +1,5 @@
+import IdentityMetadata from './IdentityMetadata';
+
 export enum EventNameTypes {
   StepCompleted = 'step_completed',
   VerificationCompleted = 'verification_completed',
@@ -9,5 +11,6 @@ export enum EventNameTypes {
 
 export default interface WebhookResource {
   eventName: EventNameTypes;
+  metadata: IdentityMetadata;
   resource: string;
 }

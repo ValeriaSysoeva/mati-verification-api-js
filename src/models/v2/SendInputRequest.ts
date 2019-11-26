@@ -1,10 +1,15 @@
 
 export enum InputTypeTypes {
   DocumentPhoto = 'document-photo',
+  SelfiePhoto = 'selfie-photo',
+  SelfieVideo = 'selfie-video',
 }
 
 export enum DocumentTypeTypes {
+  DrivingLicense = 'driving-license',
   NationalId = 'national-id',
+  Passport = 'passport',
+  ProofOfResidency = 'proof-of-residency',
 }
 
 export enum PageTypes {

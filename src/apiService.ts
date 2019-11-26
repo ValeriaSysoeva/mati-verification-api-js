@@ -8,6 +8,7 @@ import IdentityResource from './models/v2/IdentityResource';
 import SendInputRequest from './models/v2/SendInputRequest';
 import SendInputResponse from './models/v2/SendInputResponse';
 import ErrorResponse from './lib/ErrorResponse';
+import IdentityMetadata from './models/IdentityMetadata';
 
 export const API_HOST = 'https://api.getmati.com/v2';
 
@@ -90,11 +91,11 @@ class ApiService {
   /**
    * Starts new verification flow and creates identity. You should use result of this method
    * in order to get id for further `#sendInput` calls.
-   * @param {Record<string, any>} metadata - payload you want to pass to the identity
+   * @param {IdentityMetadata} metadata - payload you want to pass to the identity
    * @returns {Promise<IdentityResource>} resource of identity created.
    * @throws ErrorResponse if we get http error
    */
-  async createIdentity(metadata?: Record<string, any>): Promise<IdentityResource> {
+  async createIdentity(metadata?: IdentityMetadata): Promise<IdentityResource> {
     return this.callHttp({
       path: 'v2/identities',
       requestOptions: {
