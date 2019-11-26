@@ -1,7 +1,7 @@
 import fs from 'fs';
 
 import './config';
-import { service as apiService } from '../main';
+import { apiService } from '../main';
 import SendInputRequest, {
   DocumentPhotoInputData,
   DocumentTypeTypes, Input,

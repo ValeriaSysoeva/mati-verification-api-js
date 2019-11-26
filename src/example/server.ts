@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 
 import './config';
 import {
-  service as apiService,
+  apiService,
   sdkService as apiServiceV1,
 } from '../main';
 import WebhookResource from '../models/WebhookResource';
