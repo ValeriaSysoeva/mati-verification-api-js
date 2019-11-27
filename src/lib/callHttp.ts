@@ -3,7 +3,7 @@ import ErrorResponse from './ErrorResponse';
 
 export type RequestOptions = {
   method?: string;
-  headers?: HeadersInit;
+  headers?: Headers;
   body?: BodyInit | Record<string, any>;
 };
 
@@ -19,9 +19,8 @@ export default async function callHttp(
   requestOptions: RequestOptions,
 ): Promise<string | Record<string, any>> {
   let { body = '' } = requestOptions;
-  const { method, headers = {} as HeadersInit } = requestOptions;
-  // @ts-ignore
-  const requestContentType: string = headers['content-type'] || '';
+  const { method, headers = new Headers() } = requestOptions;
+  const requestContentType: string = headers.get('content-type') || '';
 
   if (body
     // @ts-ignore
