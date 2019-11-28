@@ -150,9 +150,9 @@ class ApiService {
         body: qs.stringify({
           grant_type: 'client_credentials',
         }),
-        headers: new Headers({
+        headers: {
           'content-type': formContentType,
-        }),
+        },
       },
     }) as AuthResponse;
     this.setBearerAuth(authResponse.access_token);
@@ -165,7 +165,6 @@ class ApiService {
     requestOptions = {},
     authType = 'bearer',
   }: CallHttpParamsType) {
-    const { headers = new Headers() } = requestOptions;
     let triedAuth = false;
     if (authType === 'bearer' && !this.bearerAuthHeader) {
       await this.auth();
@@ -179,7 +178,9 @@ class ApiService {
         authorization = this.clientAuthHeader;
       }
       if (authorization) {
-        headers.append('authorization', authorization);
+        const { headers = {} } = requestOptions;
+        // @ts-ignore
+        headers.authorization = authorization;
         requestOptions.headers = headers;
       }
     }
@@ -195,8 +196,8 @@ class ApiService {
       ) {
         // re-auth
         await this.auth();
-        headers.append('authorization', this.bearerAuthHeader);
-        requestOptions.headers = headers;
+        // @ts-ignore
+        requestOptions.headers.authorization = this.bearerAuthHeader;
         return callHttp(requestURL, requestOptions);
       }
       throw err;
