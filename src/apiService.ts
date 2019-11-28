@@ -10,7 +10,7 @@ import SendInputResponse from './models/v2/SendInputResponse';
 import ErrorResponse from './lib/ErrorResponse';
 import IdentityMetadata from './models/IdentityMetadata';
 
-export const API_HOST = 'https://api.getmati.com/v2';
+export const API_HOST = 'https://api.getmati.com';
 
 export type Options = {
   clientId: string;
@@ -150,9 +150,9 @@ class ApiService {
         body: qs.stringify({
           grant_type: 'client_credentials',
         }),
-        headers: {
+        headers: new Headers({
           'content-type': formContentType,
-        },
+        }),
       },
     }) as AuthResponse;
     this.setBearerAuth(authResponse.access_token);
@@ -165,6 +165,7 @@ class ApiService {
     requestOptions = {},
     authType = 'bearer',
   }: CallHttpParamsType) {
+    const { headers = new Headers() } = requestOptions;
     let triedAuth = false;
     if (authType === 'bearer' && !this.bearerAuthHeader) {
       await this.auth();
@@ -178,9 +179,7 @@ class ApiService {
         authorization = this.clientAuthHeader;
       }
       if (authorization) {
-        const { headers = {} } = requestOptions;
-        // @ts-ignore
-        headers.authorization = authorization;
+        headers.append('authorization', authorization);
         requestOptions.headers = headers;
       }
     }
@@ -196,8 +195,8 @@ class ApiService {
       ) {
         // re-auth
         await this.auth();
-        // @ts-ignore
-        requestOptions.headers.authorization = this.bearerAuthHeader;
+        headers.append('authorization', this.bearerAuthHeader);
+        requestOptions.headers = headers;
         return callHttp(requestURL, requestOptions);
       }
       throw err;
