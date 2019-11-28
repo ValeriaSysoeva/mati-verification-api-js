@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "form-data": "^3.0.0",
-    "isomorphic-fetch": "^2.2.1",
+    "node-fetch": "^2.6.0",
     "qs": "^6.9.1"
   },
   "devDependencies": {
