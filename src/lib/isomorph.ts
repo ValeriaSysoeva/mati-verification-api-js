@@ -16,7 +16,7 @@ const FormData = (global as Global).FormData || require('form-data');
 
 // eslint-disable-next-line global-require
 const fetch: fetchType = (global as Global).fetch
-  ? (global as Global).fetch
+  ? (global as Global).fetch.bind(undefined)
   : require('node-fetch');
 
 export default {
