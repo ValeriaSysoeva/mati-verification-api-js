@@ -15,7 +15,8 @@
     "example": "ts-node src/example/server.ts",
     "lint": "eslint \"**/*.{js,ts}\"",
     "runAllFlow": "ts-node src/example/runAllFlow.ts",
-    "test": "jest --forceExit --coverage --verbose"
+    "test": "jest --forceExit --coverage --verbose",
+    "prepublishOnly": "yarn build"
   },
   "dependencies": {
     "form-data": "^3.0.0",
